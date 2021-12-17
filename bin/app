@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+require('dotenv').config();
+const { main } = require('../build/src');
+main(process.argv.slice(2), process.env);
