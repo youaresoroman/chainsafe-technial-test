@@ -42,13 +42,13 @@ eth-ipfs-storage --help
 ### add content and set cid to Ethereum contract
 
 ```bash
-eth-ipfs-storage set --file ./example/chainsafe.json --key <ethereum account private key>
+eth-ipfs-storage set --file ./example/chainsafe.json --privateKey <ethereum account private key>
 ```
 
 ### get cid from Ethereum contract
 
 ```bash
-eth-ipfs-storage get --key <ethereum account private key>
+eth-ipfs-storage get
 ```
 
 ## Credits
