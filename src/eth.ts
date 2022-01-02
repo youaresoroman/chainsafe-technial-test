@@ -2,15 +2,6 @@ import { AbiItem } from 'web3-utils';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 import { readFile } from 'fs';
-
-interface ContractInteractionProps {
-    (props: {
-        web3: Web3;
-        abi: AbiItem | AbiItem[];
-        contractAddress: string;
-    }): Contract
-}
-
 interface AddAccountProps {
     (props: {
         web3: Web3;
@@ -37,6 +28,9 @@ interface GetCIDProps {
     (props: PrepareContractForInteractionsFunctionProps): Promise<string>
 }
 
+
+interface ContractErrorResponse { message: string | PromiseLike<string>; }
+
 /**
  * Reads an ABI file and returns the ABI object
  * 
@@ -53,19 +47,6 @@ export const readContractJSONFile = (file: string): Promise<AbiItem | AbiItem[]>
             resolve(JSON.parse(data));
         });
     });
-}
-
-/**
- * Prepares a web3 instance for interacting with a contract
- * 
- * @param web3 - web3 instance
- * @param abi - ABI of the contract
- * @param contractAddress - address of the contract
- */
-
-export const contractInteraction: ContractInteractionProps = ({ web3, abi, contractAddress }) => {
-    const contract = new web3.eth.Contract(abi, contractAddress);
-    return contract;
 }
 
 /**
@@ -103,11 +84,9 @@ export const prepareContractForInteractions: PrepareContractForInteractionsProps
     if (privateKey) {
         web3 = addAccount({ web3, privateKey });
     }
-    const contract = contractInteraction({
-        abi,
-        web3,
-        contractAddress
-    })
+
+    const contract = new web3.eth.Contract(abi, contractAddress)
+
     return {
         contract,
         web3
@@ -143,8 +122,8 @@ export const setCid: SetCIDProps = async ({
             })
             await contract.methods.set(cid)
                 .send({ from: web3.eth.defaultAccount, gasLimit: 500000 })
-                .then((res) => resolve(res.transactionHash))
-                .catch((err) => resolve(err.message));
+                .then((res: { transactionHash: string | PromiseLike<string>; }) => resolve(res.transactionHash))
+                .catch((err: ContractErrorResponse) => resolve(err.message));
         })()
     })
 }
@@ -174,8 +153,8 @@ export const getCid: GetCIDProps = async ({
             })
             await contract.methods.get()
                 .call()
-                .then((res) => resolve(res))
-                .catch((err) => resolve(err.message));
+                .then((res: string | PromiseLike<string>) => resolve(res))
+                .catch((err: ContractErrorResponse) => resolve(err.message));
         })()
     })
 }
